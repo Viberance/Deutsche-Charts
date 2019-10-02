@@ -2,7 +2,6 @@
 library(igraph)
 library(igraphdata)
 library(visNetwork)
-# library(tcltk)
 
 ## Einlesen Edge- und Nodelist
 edges <- read.csv("https://raw.githubusercontent.com/DenisUndso/Deutsche-Charts/master/popmusik_el.csv", header=T, as.is=T, sep=",")
@@ -14,21 +13,28 @@ pop <- graph_from_data_frame(d=edges, vertices=nodes, directed=TRUE)
 ## Nodeattribute
 V(pop)[(V(pop)$type=="2")]$shape <- "square"
 V(pop)[(V(pop)$type=="1")]$shape <- "circle"
-V(pop)[(V(pop)$type=="2")]$color <- "blue"
-V(pop)[(V(pop)$type=="1")]$color <- "red"
+V(pop)[(V(pop)$type=="1")]$color <- "green"
 V(pop)[(V(pop)$type=="1")]$shape <- "circle"
 
+##Geschlecht färben
+V(pop)[(V(pop)$sex=="2")]$color <- "blue"
+V(pop)[(V(pop)$sex=="1")]$color <- "red"
+
+##Sprache färben
+V(pop)[(V(pop)$sprache=="1")]$color="green"
+V(pop)[(V(pop)$sprache=="2")]$color="orange"
+
 ##Edgeattribute
-E(pop)[(E(pop)$type=="1")]$color <- "black"
-E(pop)[(E(pop)$type=="2")]$color <- "green"
-E(pop)[(E(pop)$type=="3")]$color <- "purple"
+E(pop)[(E(pop)$type=="1")]$color <- "khaki"
+E(pop)[(E(pop)$type=="2")]$color <- "magenta"
+E(pop)[(E(pop)$type=="3")]$color <- "brown"
 ```
 
 ```{r Erstellen und Auswerten}
 ## Plotbefehle
 visIgraph(pop, type = "full", layout="layout_nicely", smooth=FALSE)
 plot(pop, vertex.size=1.5, layout=layout_nicely, edge.arrow.size=.3)
-plot(pop, vertex.size=1.5, layout=layout_nicely, edge.arrow.size=.1, vertex.label.dist=1, vertex.label.cex=.5, vertex.label.degree=pi/2)
+plot(pop, vertex.size=3, layout=layout_nicely, edge.arrow.size=.2, vertex.label=NA)
 
 ## Netzwerkparameter
 edge_density(pop)
@@ -37,20 +43,14 @@ degree(pop, mode="out")
 farthest_vertices(pop)
 ```
 
-
-```{r Frauen}
-##Nur Frauen Anzeigen
-pop_fem <- delete.vertices(pop, V(pop) [sex == "2"])
-Isolated = which(degree(pop_fem)==0)
-frauen = delete.vertices(pop_fem, Isolated)
-
-visIgraph(frauen, type = "full", layout="layout_nicely", smooth=FALSE)
-```
-
 ```{r Egograph}
 ## Erstellen Ego-Graph Vincent Stein
 vincent<- make_ego_graph(pop, order=2, c("Vincent Stein"))
 plot(vincent[[1]],layout=layout_nicely, edge.arrow.size=0.2)
+
+## Erstellen Ego-Graph RAF Camora
+raf<- make_ego_graph(pop, order=3, c("Raphael Ragucci"))
+plot(raf[[1]],layout=layout_nicely, edge.arrow.size=0.2)
 ```
 
 ```{r Cluster}
@@ -64,3 +64,15 @@ plot(pc, pop, layout_with_lgl(graph, maxiter = 150, maxdelta = vcount(graph),
 ```
 Cluster nicht anwendbar, muss entzerrt werden, visIgraph funktioniert nicht
 -> evtl. bei Teilnetzwerken sinnvoll
+
+```{r Subgraphen}
+##Nur Frauen Anzeigen
+pop_fem <- delete.vertices(pop, V(pop) [sex == "2"])
+Isolated = which(degree(pop_fem)==0)
+frauen = delete.vertices(pop_fem, Isolated)
+
+visIgraph(frauen, type = "full", layout="layout_nicely", smooth=FALSE)
+
+
+```
+
